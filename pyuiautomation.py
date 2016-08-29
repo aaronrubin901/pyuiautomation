@@ -1,10 +1,9 @@
 from collections import deque
 from xml.dom import minidom
 
-import comtypes
 import comtypes.client
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 UIAutomationClient = comtypes.client.GetModule('UIAutomationCore.dll')
 
@@ -68,6 +67,21 @@ _tree_scope = {
 class _UIAutomationElement(object):
     def __init__(self, IUIAutomationElement):
         self.IUIAutomationElement = IUIAutomationElement
+
+    @property
+    def CurrentValue(self):
+        """Retrieves the UI Automation element value
+
+        :rtype : unicode
+        """
+        # validate that the element is a text element
+        if not "text" in self.IUIAutomationElement.CurrentClassName.lower():
+            return None
+        IUnknown = self.IUIAutomationElement.GetCurrentPattern(UIAutomationClient.UIA_TextPatternId)
+        IUIAutomationTextPattern = IUnknown.QueryInterface(UIAutomationClient.IUIAutomationTextPattern)
+        return IUIAutomationTextPattern.DocumentRange.getText(-1)
+
+    CurrentValue = CurrentValue
 
     @property
     def CurrentAutomationId(self):
